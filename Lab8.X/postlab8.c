@@ -13,7 +13,6 @@ unsigned int unidad; // Almacena las unidades en  ASCII
 unsigned int pot; // Guarda el valor leído del potenciómetro
 unsigned char opcion; // Variable para elegir una opción
 unsigned char bandera; // Indicador para controlar bucles
-int ASCII[10] = {0, 1, 2, 3, 4, 5, 7, 8, 9}; // Array con los valores ASCII de los números del 0 al 9
 
 // CONFIG1
 #pragma config FOSC = INTRC_NOCLKOUT// Oscillator Selection bits (INTOSCIO oscillator: I/O function on RA6/OSC2/CLKOUT pin, I/O function on RA7/OSC1/CLKIN)
@@ -44,7 +43,9 @@ void __interrupt() isr(void){
         
         pot = ADRESH; // Transferir el valor de ADRESH a la variable pot
         centena = (pot/100); // Calcular las centenas del valor
+        
         decena = ((pot/10)%10); // Calcular las decenas del valor
+        
         unidad = (pot%10); // Calcular las unidades del valor
         
         PIR1bits.ADIF = 0; // Borrar el indicador del conversor ADC
@@ -82,15 +83,15 @@ void main(void){
                 //cadena("\n\r"); //salto
 
                 ADCON0bits.GO = 1; // Comenzar la conversión ADC
-                __delay_ms(5); // Esperar 5 milisegundos
+                __delay_ms(10); 
                 
-                TXREG = ASCII[centena]+48; // Enviar el valor de las centenas
-                __delay_ms(5); // Esperar 5 milisegundos
+                TXREG = centena + 48; // Enviar el valor de las centenas
+                __delay_ms(10); 
                 
-                TXREG = ASCII[decena]+48; // Enviar el valor de las decenas
-                __delay_ms(5); // Esperar 5 milisegundos
+                TXREG = decena + 48; // Enviar el valor de las decenas
+                __delay_ms(10); 
                 
-                TXREG = ASCII[unidad]+48; // Enviar el valor de las unidades
+                TXREG = unidad + 48; // Enviar el valor de las unidades
                 
                 //cadena("\n\r\n\r"); // Salto de línea
                 bandera = 0; // Reiniciar al menú
@@ -99,6 +100,7 @@ void main(void){
             
             // --------------- Enviar ASCII --------------- 
             if (opcion == '2'){ //revisar si se selecciono 2
+                
                 cadena("\n\r"); // Salto de línea
                 cadena("\n\rINGRESE UN CARACTER PARA MOSTRAR EN ASCII:\n\r"); // Solicitar entrada
                 cadena("\n\r"); // Salto de línea
@@ -108,7 +110,7 @@ void main(void){
                 
                 while (bandera == 1){ // Ciclo
                     
-                    if (PIR1bits.RCIF == 1 && RCREG != 0){ // Esperar a que se presione una tecla
+                    if (PIR1bits.RCIF == 1 ){ // Esperar a que se presione una tecla
                         PORTB = RCREG; // Mostrar el valor en el puerto B
                         PIR1bits.RCIF = 0; // Borrar el indicador
                         bandera = 0; // Desactivar la bandera
@@ -178,7 +180,7 @@ void setup(void){
             
     //--------------- Iniciar el ADC ---------------
     ADCON0bits.ADON = 1;  
-    __delay_ms(1);
+    __delay_ms(5);
 }
     
 
