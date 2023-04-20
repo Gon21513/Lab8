@@ -7,15 +7,13 @@
 #define _XTAL_FREQ 1000000
 
 //variables
-int ascii[10] = {0, 1, 2, 3, 4, 5, 7, 8, 9}; 
-//unsigned int word; //variable para guardar caracter ascii
-unsigned char bandera; //bandera para manetener loop
-unsigned char opcion; //selector para entrar en algun modo
-unsigned char bandera; //bandera para mantener en loop
-unsigned int centena; //variable para centenas en conversión ascii
-unsigned int decena; //variable para decenas en conversión ascii
-unsigned int unidad; //variable para unidades en conversión ascii
-unsigned int pot; //variable para guardar valor del potenciómetro
+unsigned int centena; // Almacena las centenas en  ASCII
+unsigned int decena; // Almacena las decenas en  ASCII
+unsigned int unidad; // Almacena las unidades en  ASCII
+unsigned int pot; // Guarda el valor leído del potenciómetro
+unsigned char opcion; // Variable para elegir una opción
+unsigned char bandera; // Indicador para controlar bucles
+int ASCII[10] = {0, 1, 2, 3, 4, 5, 7, 8, 9}; // Array con los valores ASCII de los números del 0 al 9
 
 // CONFIG1
 #pragma config FOSC = INTRC_NOCLKOUT// Oscillator Selection bits (INTOSCIO oscillator: I/O function on RA6/OSC2/CLKOUT pin, I/O function on RA7/OSC1/CLKIN)
@@ -43,11 +41,14 @@ unsigned int pot; //variable para guardar valor del potenciómetro
 void __interrupt() isr(void){
     // ---- INTERRUPCION DEL ADC --------
     if (PIR1bits.ADIF == 1){ // Chequear bandera del conversor ADC
-        pot = ADRESH; // Pasar valor del ADRESH a variable pot
-        centena = (pot/100); //operación para obtener centenas
-        decena = ((pot/10)%10); //operación para obtener decenas
-        unidad = (pot%10); //operación para obtener unidades
-        PIR1bits.ADIF = 0; // Limpiar bandera de conversor
+        
+        pot = ADRESH; // Transferir el valor de ADRESH a la variable pot
+        centena = (pot/100); // Calcular las centenas del valor
+        decena = ((pot/10)%10); // Calcular las decenas del valor
+        unidad = (pot%10); // Calcular las unidades del valor
+        
+        PIR1bits.ADIF = 0; // Borrar el indicador del conversor ADC
+        
         }
 }
 
@@ -59,14 +60,12 @@ void cadena(char *cursor);
 void main(void){
     setup();
     
-    
-    
-    // Envio de datos
-    while (1){
-        //cadena("\n\rSELECCIONE UNA OPCION\n\r) Leer Potenciometro\n\r2) Enviar ASCII\n\r"); // mostrar el menu como string
-        cadena("SELECCIONE UNA OPCION:\n\r"); //enter
-        cadena("1. VALOR DEL POTENCIOMETRO\n\r"); //enter
-        cadena("2. VALOR EN ASCII\n\r"); //enter
+    //menu de opciones
+        while (1){
+        cadena("\n\r"); 
+        cadena("SELECCIONE UNA OPCION:\n\r"); 
+        cadena("1. VALOR DEL POTENCIOMETRO\n\r"); 
+        cadena("2. VALOR EN ASCII\n\r"); 
 
         bandera = 1;
         while (bandera == 1){
@@ -75,35 +74,48 @@ void main(void){
                 PIR1bits.RCIF = 0; //limpiar bandera
                 __delay_ms(10);} //delay de 10ms
                 
-            // --------------- Leer POT ---------------    
+        //opciones de menu y valore de potenciometro
             if (opcion == '1'){ //revisar si se selecciono 1
-                cadena("\n\r"); //enter
-                cadena("EL VALOR DEL POTENCIOMETRO ES\n\r"); //enter
-                ADCON0bits.GO = 1; //iniciar conversor ADC
-                __delay_ms(5); //delay de 5ms
-                TXREG = ascii[centena]+48; //mostrar valor de centena
-                __delay_ms(5); //delay de 5ms
-                TXREG = ascii[decena]+48; //mostrar valor de decena
-                __delay_ms(5); //delay de 5ms
-                TXREG = ascii[unidad]+48; //mostrar valor de unidades
-                cadena("\n\r\n\r"); //enter
-                bandera = 0; //regresar al menu
-                opcion = 0; //limpiar selector
+                
+                cadena("\n\r"); // Salto de línea
+                cadena("\n\r EL VALOR DEL POTENCIOMETRO ES:\n\r"); // Mostrar mensaje
+                //cadena("\n\r"); //salto
+
+                ADCON0bits.GO = 1; // Comenzar la conversión ADC
+                __delay_ms(5); // Esperar 5 milisegundos
+                
+                TXREG = ASCII[centena]+48; // Enviar el valor de las centenas
+                __delay_ms(5); // Esperar 5 milisegundos
+                
+                TXREG = ASCII[decena]+48; // Enviar el valor de las decenas
+                __delay_ms(5); // Esperar 5 milisegundos
+                
+                TXREG = ASCII[unidad]+48; // Enviar el valor de las unidades
+                
+                //cadena("\n\r\n\r"); // Salto de línea
+                bandera = 0; // Reiniciar al menú
+                opcion = 0; // Borrar el selector
             }
             
             // --------------- Enviar ASCII --------------- 
             if (opcion == '2'){ //revisar si se selecciono 2
-                cadena("\n\r"); //enter
-                cadena("INGRESE UN CARACTER PARA MOSTRAR EN ASCII\n\r"); //mostrar informacion
-                cadena("\n\r"); //enter
-                bandera = 1; //encender bandera para esperar que se introduzca tecla
-                PIR1bits.RCIF = 0; //limpiar bandera 
-                while (bandera == 1){ //loop
-                if (PIR1bits.RCIF == 1 && RCREG != 0){ //esperar que se presione tecla  
-                PORTB = RCREG; //mostrar valor en el puerto B
-                PIR1bits.RCIF = 0; //limpiar bandera
-                bandera = 0; //apagar bandera
-                opcion = 0;}}} //apagar bandera
+                cadena("\n\r"); // Salto de línea
+                cadena("\n\rINGRESE UN CARACTER PARA MOSTRAR EN ASCII:\n\r"); // Solicitar entrada
+                cadena("\n\r"); // Salto de línea
+                bandera = 1; // Activar la bandera para esperar entrada
+                PIR1bits.RCIF = 0; // Borrar el indicador
+                
+                
+                while (bandera == 1){ // Ciclo
+                    
+                    if (PIR1bits.RCIF == 1 && RCREG != 0){ // Esperar a que se presione una tecla
+                        PORTB = RCREG; // Mostrar el valor en el puerto B
+                        PIR1bits.RCIF = 0; // Borrar el indicador
+                        bandera = 0; // Desactivar la bandera
+                        opcion = 0;
+                            }
+                       }
+                } //apagar bandera
         
             }
         }  
@@ -132,7 +144,7 @@ void setup(void){
     INTCONbits.GIE = 1;
     
 //---------------SETUP TX Y RX------------------
-        TXSTAbits.SYNC = 0;//asincrono
+    TXSTAbits.SYNC = 0;//asincrono
     TXSTAbits.BRGH = 1;//high baud rate select bit
     
     BAUDCTLbits.BRG16 = 1;//utilizar q6 bits baud rate
@@ -159,10 +171,9 @@ void setup(void){
     // --------------- Seleccion de reloj ---------------
     ADCON0bits.ADCS = 0b10; // Fosc/32
             
-    // --------------- Habilitar interrupciones del ADC ---------------
     
-            
-    // --------------- Asignar 8 bits, justificado izquierda ---------------
+ 
+    // ---------------justificado izquierda ---------------
     ADCON1bits.ADFM = 0;        
             
     //--------------- Iniciar el ADC ---------------
@@ -174,10 +185,10 @@ void setup(void){
 
 //Funcion para mostrar texto
 void cadena(char *cursor){
-    while (*cursor != '\0'){ // Mientras el cursor sea diferente a nulo
-        while (PIR1bits.TXIF == 0); // Mientras que se este enviando no hacer nada
-            TXREG = *cursor; // Asignar el valor del cursor para enviar
-            *cursor++; // Aumentar posicion del cursor
+    while (*cursor != '\0'){ //verificar si llega al nulo
+        while (PIR1bits.TXIF == 0); // no haces nada cuando envia
+            TXREG = *cursor; // asigna el valor a enviae
+            *cursor++; // incremeta posicion del cursor
     }
 }
 
